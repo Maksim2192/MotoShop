@@ -1,0 +1,304 @@
+.main {
+  min-height: 100vh;
+
+  padding: 54px 24px 90px;
+
+  background: #f8fafc;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+
+  margin-bottom: 34px;
+}
+
+.label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  color: #16a34a;
+
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.heading h1 {
+  margin: 0;
+
+  font-size: 42px;
+  line-height: 1.15;
+
+  color: #111827;
+}
+
+.heading p {
+  max-width: 600px;
+
+  margin: 12px 0 0;
+
+  font-size: 15px;
+  line-height: 1.7;
+
+  color: #6b7280;
+}
+
+.count {
+  flex-shrink: 0;
+
+  padding: 9px 14px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  color: #374151;
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.sidebar {
+  min-width: 0;
+}
+
+.products {
+  min-width: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.empty {
+  min-height: 350px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 40px;
+
+  text-align: center;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+}
+
+.empty span {
+  font-size: 38px;
+}
+
+.empty h2 {
+  margin: 16px 0 8px;
+
+  font-size: 22px;
+
+  color: #111827;
+}
+
+.empty p {
+  max-width: 400px;
+
+  margin: 0;
+
+  font-size: 14px;
+  line-height: 1.6;
+
+  color: #6b7280;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 850px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .heading {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .main {
+    padding: 34px 12px 60px;
+  }
+
+  .heading {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .heading h1 {
+    font-size: 32px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .count {
+    align-self: flex-start;
+  }
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-top: 42px;
+}
+
+.pageButton {
+  min-width: 42px;
+  height: 42px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  padding: 0 12px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+
+  background: #ffffff;
+  color: #111827;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  text-decoration: none;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.pageButton:hover {
+  transform: translateY(-1px);
+
+  border-color: #16a34a;
+
+  color: #16a34a;
+}
+
+.activePage {
+  border-color: #16a34a;
+
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.activePage:hover {
+  color: #ffffff;
+}
+
+.disabledPage {
+  opacity: 0.35;
+
+  cursor: not-allowed;
+
+  pointer-events: none;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-top: 42px;
+}
+
+.pageButton {
+  width: 44px;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #374151;
+  border-radius: 10px;
+
+  background: #1f2937;
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  text-decoration: none;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.pageButton:hover {
+  transform: translateY(-2px);
+
+  border-color: #4ade80;
+
+  color: #4ade80;
+}
+
+.activePage {
+  border-color: #22c55e;
+
+  background: #22c55e;
+  color: #ffffff;
+}
+
+.activePage:hover {
+  background: #16a34a;
+
+  color: #ffffff;
+}
+
+.disabledPage {
+  opacity: 0.35;
+
+  cursor: not-allowed;
+  pointer-events: none;
+}

@@ -1,0 +1,96 @@
+.buyBlock {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
+
+  margin-top: 30px;
+}
+
+.quantity {
+  height: 52px;
+
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+
+  overflow: hidden;
+}
+
+.quantity button {
+  height: 100%;
+
+  font-size: 20px;
+
+  color: #111827;
+  background: #ffffff;
+
+  border: none;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.quantity button:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.quantity button:disabled {
+  color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.quantity span {
+  text-align: center;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  color: #111827;
+}
+
+.cartButton {
+  min-height: 52px;
+
+  padding: 0 24px;
+
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+
+  color: #ffffff;
+  background: #111827;
+
+  border: none;
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.cartButton:hover:not(:disabled) {
+  background: #16a34a;
+}
+
+.cartButton:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.cartButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .buyBlock {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,470 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  width: 100%;
+
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  height: 76px;
+
+  margin: 0 auto;
+  padding: 0 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* LOGO */
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+
+  color: #111827;
+  text-decoration: none;
+}
+
+.logo span {
+  color: #16a34a;
+}
+
+/* NAVIGATION */
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+}
+
+.navLink {
+  position: relative;
+
+  padding: 27px 0;
+
+  font-size: 15px;
+  font-weight: 500;
+
+  color: #4b5563;
+
+  text-decoration: none;
+
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: #111827;
+}
+
+.navLink::after {
+  content: "";
+
+  position: absolute;
+  left: 0;
+  bottom: 19px;
+
+  width: 100%;
+  height: 2px;
+
+  background: #16a34a;
+
+  transform: scaleX(0);
+  transform-origin: center;
+
+  transition: transform 0.2s ease;
+}
+
+.navLink:hover::after {
+  transform: scaleX(1);
+}
+
+.active {
+  color: #111827;
+}
+
+.active::after {
+  transform: scaleX(1);
+}
+
+/* ACTIONS */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconButton,
+.cartButton {
+  position: relative;
+
+  width: 44px;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #111827;
+  background: transparent;
+
+  border: none;
+  border-radius: 50%;
+
+  cursor: pointer;
+
+  text-decoration: none;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.iconButton:hover,
+.cartButton:hover {
+  background: #f3f4f6;
+}
+
+.iconButton:active,
+.cartButton:active {
+  transform: scale(0.95);
+}
+
+/* CART COUNT */
+
+.cartCount {
+  position: absolute;
+  top: 3px;
+  right: 1px;
+
+  min-width: 18px;
+  height: 18px;
+
+  padding: 0 5px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  color: white;
+  background: #16a34a;
+
+  border: 2px solid white;
+  border-radius: 999px;
+}
+
+/* TABLET */
+
+@media (max-width: 850px) {
+  .nav {
+    gap: 20px;
+  }
+
+  .navLink {
+    font-size: 14px;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+  .container {
+    height: 68px;
+    padding: 0 16px;
+  }
+
+  .logo {
+    font-size: 21px;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .actions {
+    margin-left: auto;
+  }
+}
+.searchWrapper {
+  border-top: 1px solid #ededed;
+  background: #fff;
+}
+
+.searchForm {
+  width: min(1200px, calc(100% - 40px));
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns:
+    auto
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+  gap: 12px;
+
+  padding: 16px 0;
+}
+
+.searchIcon {
+  color: #777;
+}
+
+.searchForm input {
+  width: 100%;
+
+  border: 0;
+  outline: none;
+
+  background: transparent;
+  color: #111;
+
+  font: inherit;
+  font-size: 15px;
+}
+
+.searchForm input::placeholder {
+  color: #999;
+}
+
+.searchForm button {
+  min-height: 40px;
+
+  padding: 0 18px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: #111;
+  color: #fff;
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.searchForm button:hover {
+  background: #333;
+}
+
+.searchForm button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .searchForm {
+    width: calc(100% - 28px);
+  }
+
+  .searchForm button {
+    padding: 0 13px;
+  }
+}
+
+.profile {
+  position: relative;
+}
+
+.profileButton {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  min-height: 42px;
+
+  padding: 4px 9px 4px 4px;
+
+  border: 0;
+  border-radius: 12px;
+
+  background: transparent;
+  color: #171717;
+
+  font: inherit;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+}
+
+.profileButton:hover {
+  background: #f3f4f5;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #111820;
+  color: #fff;
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.userName {
+  max-width: 110px;
+
+  overflow: hidden;
+
+  color: #24282e;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  color: #8c929a;
+
+  transition:
+    transform 0.2s ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.profileMenu {
+  position: absolute;
+
+  top: calc(100% + 12px);
+  right: 0;
+
+  z-index: 1000;
+
+  width: 260px;
+
+  padding: 9px;
+
+  border: 1px solid #e4e6e8;
+  border-radius: 14px;
+
+  background: #fff;
+
+  box-shadow:
+    0 18px 50px
+    rgba(0, 0, 0, 0.12);
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+
+  padding: 11px 12px;
+}
+
+.profileInfo strong {
+  color: #171717;
+
+  font-size: 14px;
+}
+
+.profileInfo span {
+  overflow: hidden;
+
+  color: #8b9098;
+
+  font-size: 12px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profileDivider {
+  height: 1px;
+
+  margin: 5px 0;
+
+  background: #eeeeef;
+}
+
+.profileMenu > a,
+.logoutButton {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  box-sizing: border-box;
+
+  padding: 11px 12px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+  color: #353a41;
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  text-decoration: none;
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.profileMenu > a:hover {
+  background: #f3f6f4;
+  color: #159447;
+}
+
+.logoutButton {
+  color: #d23c3c;
+}
+
+.logoutButton:hover {
+  background: #fff1f1;
+}
+
+@media (max-width: 800px) {
+  .userName {
+    display: none;
+  }
+
+  .profileButton {
+    padding: 4px;
+  }
+
+  .profileMenu {
+    width: 240px;
+  }
+}
