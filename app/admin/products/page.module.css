@@ -194,3 +194,108 @@
   cursor: not-allowed;
   pointer-events: none;
 }
+
+.bulkActions {
+  min-height: 56px;
+  margin-bottom: 12px;
+  padding: 0 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.selectAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+  user-select: none;
+}
+
+
+/* CHECKBOX */
+
+.selectAll input,
+.checkboxColumn input {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+
+  accent-color: #111827;
+
+  cursor: pointer;
+}
+
+
+/* COLUMN */
+
+.checkboxColumn {
+  width: 44px;
+  min-width: 44px;
+
+  padding-left: 16px !important;
+  padding-right: 8px !important;
+
+  text-align: center;
+}
+
+
+/* DELETE SELECTED */
+
+.bulkDeleteButton {
+  height: 36px;
+  padding: 0 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: #fee2e2;
+  color: #dc2626;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.bulkDeleteButton:hover {
+  background: #dc2626;
+  color: #fff;
+}
+
+.bulkDeleteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* SELECTED PRODUCT */
+
+.selectedRow {
+  background: #f8fafc;
+}
+
+.selectedRow td {
+  background: #f8fafc;
+}

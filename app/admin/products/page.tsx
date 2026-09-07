@@ -3,15 +3,17 @@ import Link from "next/link";
 import ProductFilters from "@/components/ProductFilters/ProductFilters";
 import type { Product } from "@/src/types/product";
 
-import DeleteProductButton from "./DeleteProductButton";
+import AdminProductsTable from "./AdminProductsTable";
 
 import styles from "./page.module.css";
+
 
 interface Category {
   id: number;
   name: string;
   slug: string;
 }
+
 
 interface Pagination {
   page: number;
@@ -22,14 +24,17 @@ interface Pagination {
   hasPrevPage: boolean;
 }
 
+
 interface ProductsResponse {
   data: Product[];
   pagination: Pagination;
 }
 
+
 interface CategoriesResponse {
   data: Category[];
 }
+
 
 interface AdminProductsPageProps {
   searchParams: Promise<{
@@ -42,6 +47,7 @@ interface AdminProductsPageProps {
     page?: string;
   }>;
 }
+
 
 export default async function AdminProductsPage({
   searchParams,
@@ -58,6 +64,11 @@ export default async function AdminProductsPage({
       ? parsedPage
       : 1;
 
+
+  // =========================
+  // API PARAMS
+  // =========================
+
   const apiParams =
     new URLSearchParams();
 
@@ -71,12 +82,14 @@ export default async function AdminProductsPage({
     "20"
   );
 
+
   if (params.search?.trim()) {
     apiParams.set(
       "search",
       params.search.trim()
     );
   }
+
 
   if (params.category) {
     apiParams.set(
@@ -85,12 +98,14 @@ export default async function AdminProductsPage({
     );
   }
 
+
   if (params.minPrice) {
     apiParams.set(
       "minPrice",
       params.minPrice
     );
   }
+
 
   if (params.maxPrice) {
     apiParams.set(
@@ -99,6 +114,7 @@ export default async function AdminProductsPage({
     );
   }
 
+
   if (params.discount === "true") {
     apiParams.set(
       "discount",
@@ -106,12 +122,18 @@ export default async function AdminProductsPage({
     );
   }
 
+
   if (params.sort) {
     apiParams.set(
       "sort",
       params.sort
     );
   }
+
+
+  // =========================
+  // FETCH
+  // =========================
 
   const [
     productsResponse,
@@ -132,22 +154,30 @@ export default async function AdminProductsPage({
     ),
   ]);
 
+
   if (!productsResponse.ok) {
     return (
-      <section className={styles.page}>
-        <div className={styles.empty}>
+      <section
+        className={styles.page}
+      >
+        <div
+          className={styles.empty}
+        >
           <span>⚠️</span>
 
           <h2>
-            Не вдалося завантажити товари
+            Не вдалося завантажити
+            товари
           </h2>
         </div>
       </section>
     );
   }
 
+
   const productsResult: ProductsResponse =
     await productsResponse.json();
+
 
   const categoriesResult: CategoriesResponse =
     categoriesResponse.ok
@@ -155,6 +185,7 @@ export default async function AdminProductsPage({
       : {
           data: [],
         };
+
 
   const products =
     productsResult.data ?? [];
@@ -165,11 +196,17 @@ export default async function AdminProductsPage({
   const pagination =
     productsResult.pagination;
 
+
+  // =========================
+  // PAGINATION URL
+  // =========================
+
   const createPageHref = (
     page: number
   ) => {
     const query =
       new URLSearchParams();
+
 
     if (params.search?.trim()) {
       query.set(
@@ -178,12 +215,14 @@ export default async function AdminProductsPage({
       );
     }
 
+
     if (params.category) {
       query.set(
         "category",
         params.category
       );
     }
+
 
     if (params.minPrice) {
       query.set(
@@ -192,12 +231,14 @@ export default async function AdminProductsPage({
       );
     }
 
+
     if (params.maxPrice) {
       query.set(
         "maxPrice",
         params.maxPrice
       );
     }
+
 
     if (
       params.discount === "true"
@@ -208,6 +249,7 @@ export default async function AdminProductsPage({
       );
     }
 
+
     if (params.sort) {
       query.set(
         "sort",
@@ -215,199 +257,77 @@ export default async function AdminProductsPage({
       );
     }
 
+
     query.set(
       "page",
       String(page)
     );
 
+
     return `/admin/products?${query.toString()}`;
   };
 
+
   return (
-    <section className={styles.page}>
-      <div className={styles.header}>
+    <section
+      className={styles.page}
+    >
+      {/* HEADER */}
+
+      <div
+        className={styles.header}
+      >
         <div>
-          <h1 className={styles.title}>
+          <h1
+            className={styles.title}
+          >
             Товари
           </h1>
 
-          <p className={styles.subtitle}>
+          <p
+            className={
+              styles.subtitle
+            }
+          >
             Всього товарів:{" "}
             {pagination.total}
           </p>
         </div>
 
+
         <Link
           href="/admin/products/new"
-          className={styles.addButton}
+          className={
+            styles.addButton
+          }
         >
           + Додати товар
         </Link>
       </div>
 
-      <div className={styles.filters}>
+
+      {/* FILTERS */}
+
+      <div
+        className={styles.filters}
+      >
         <ProductFilters
           categories={categories}
           basePath="/admin/products"
         />
       </div>
 
+
+      {/* PRODUCTS */}
+
       {products.length > 0 ? (
         <>
-          <div
-            className={
-              styles.tableWrapper
-            }
-          >
-            <table
-              className={styles.table}
-            >
-              <thead>
-                <tr>
-                  <th>Товар</th>
-                  <th>Ціна</th>
-                  <th>
-                    Стара ціна
-                  </th>
-                  <th>
-                    Залишок
-                  </th>
-                  <th>
-                    Категорія
-                  </th>
-                  <th>
-                    Дії
-                  </th>
-                </tr>
-              </thead>
+          <AdminProductsTable
+            products={products}
+          />
 
-              <tbody>
-                {products.map(
-                  (product) => (
-                    <tr
-                      key={
-                        product.id
-                      }
-                    >
-                      <td>
-                        <div
-                          className={
-                            styles.product
-                          }
-                        >
-                          {product
-                            .images?.[0] ? (
-                            <img
-                              src={
-                                product
-                                  .images[0]
-                              }
-                              alt={
-                                product.name
-                              }
-                              className={
-                                styles.image
-                              }
-                            />
-                          ) : (
-                            <div
-                              className={
-                                styles.noImage
-                              }
-                            >
-                              Немає
-                              фото
-                            </div>
-                          )}
 
-                          <div>
-                            <strong>
-                              {
-                                product.name
-                              }
-                            </strong>
-
-                            <p
-                              className={
-                                styles.slug
-                              }
-                            >
-                              {
-                                product.slug
-                              }
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td>
-                        {
-                          product.price
-                        }{" "}
-                        грн
-                      </td>
-
-                      <td>
-                        {product.oldPrice !==
-                          null &&
-                        product.oldPrice !==
-                          undefined
-                          ? `${product.oldPrice} грн`
-                          : "—"}
-                      </td>
-
-                      <td>
-                        <span
-                          className={
-                            product.stock >
-                            0
-                              ? styles.inStock
-                              : styles.outOfStock
-                          }
-                        >
-                          {
-                            product.stock
-                          }
-                        </span>
-                      </td>
-
-                      <td>
-                        {product
-                          .category
-                          ?.name ?? "—"}
-                      </td>
-
-                      <td>
-                        <div
-                          className={
-                            styles.actions
-                          }
-                        >
-                          <Link
-                            href={`/admin/products/${product.id}`}
-                            className={
-                              styles.editButton
-                            }
-                          >
-                            Редагувати
-                          </Link>
-
-                          <DeleteProductButton
-                            id={
-                              product.id
-                            }
-                            className={
-                              styles.deleteButton
-                            }
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                )}
-              </tbody>
-            </table>
-          </div>
+          {/* PAGINATION */}
 
           {pagination.totalPages >
             1 && (
@@ -420,8 +340,7 @@ export default async function AdminProductsPage({
               {pagination.hasPrevPage ? (
                 <Link
                   href={createPageHref(
-                    pagination.page -
-                      1
+                    pagination.page - 1
                   )}
                   className={
                     styles.pageButton
@@ -437,6 +356,7 @@ export default async function AdminProductsPage({
                 </span>
               )}
 
+
               {Array.from(
                 {
                   length:
@@ -447,9 +367,7 @@ export default async function AdminProductsPage({
               ).map(
                 (pageNumber) => (
                   <Link
-                    key={
-                      pageNumber
-                    }
+                    key={pageNumber}
                     href={createPageHref(
                       pageNumber
                     )}
@@ -460,18 +378,16 @@ export default async function AdminProductsPage({
                         : ""
                     }`}
                   >
-                    {
-                      pageNumber
-                    }
+                    {pageNumber}
                   </Link>
                 )
               )}
 
+
               {pagination.hasNextPage ? (
                 <Link
                   href={createPageHref(
-                    pagination.page +
-                      1
+                    pagination.page + 1
                   )}
                   className={
                     styles.pageButton
@@ -490,7 +406,9 @@ export default async function AdminProductsPage({
           )}
         </>
       ) : (
-        <div className={styles.empty}>
+        <div
+          className={styles.empty}
+        >
           <span>📦</span>
 
           <h2>

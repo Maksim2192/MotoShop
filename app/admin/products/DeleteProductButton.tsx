@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface DeleteProductButtonProps {
@@ -13,26 +14,52 @@ export default function DeleteProductButton({
 }: DeleteProductButtonProps) {
   const router = useRouter();
 
+  const [deleting, setDeleting] =
+    useState(false);
+
   const handleDelete = async () => {
-    const isConfirmed = confirm(
+    const isConfirmed = window.confirm(
       "Ви точно хочете видалити цей товар?"
     );
 
     if (!isConfirmed) return;
 
-    const response = await fetch(
-      `/api/admin/products/${id}`,
-      {
-        method: "DELETE",
+    try {
+      setDeleting(true);
+
+      const response = await fetch(
+        `/api/admin/products/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = await response
+        .json()
+        .catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message ||
+            "Не вдалося видалити товар"
+        );
       }
-    );
 
-    if (!response.ok) {
-      alert("Не вдалося видалити товар");
-      return;
+      router.refresh();
+    } catch (error) {
+      console.error(
+        "DELETE PRODUCT ERROR:",
+        error
+      );
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Не вдалося видалити товар"
+      );
+    } finally {
+      setDeleting(false);
     }
-
-    router.refresh();
   };
 
   return (
@@ -40,8 +67,11 @@ export default function DeleteProductButton({
       type="button"
       onClick={handleDelete}
       className={className}
+      disabled={deleting}
     >
-      Видалити
+      {deleting
+        ? "Видалення..."
+        : "Видалити"}
     </button>
   );
 }
