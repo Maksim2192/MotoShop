@@ -41,12 +41,12 @@ export default async function ProductPage({
 
   const discount =
     product.oldPrice !== null &&
-      product.oldPrice > product.price
+    product.oldPrice > product.price
       ? Math.round(
-        ((product.oldPrice - product.price) /
-          product.oldPrice) *
-        100
-      )
+          ((product.oldPrice - product.price) /
+            product.oldPrice) *
+            100
+        )
       : 0;
 
   return (
@@ -83,11 +83,11 @@ export default async function ProductPage({
         </div>
 
         <section className={styles.product}>
-         <ProductGallery
-  images={product.images ?? []}
-  name={product.name}
-  discount={discount}
-/>
+          <ProductGallery
+            images={product.images ?? []}
+            name={product.name}
+            discount={discount}
+          />
 
           <div className={styles.info}>
             {product.category && (
@@ -124,7 +124,7 @@ export default async function ProductPage({
 
               {product.oldPrice !== null &&
                 product.oldPrice >
-                product.price && (
+                  product.price && (
                   <span
                     className={styles.oldPrice}
                   >
@@ -155,17 +155,13 @@ export default async function ProductPage({
                 : "Немає в наявності"}
             </div>
 
-            {product.description && (
-              <p className={styles.shortDescription}>
-                {product.description}
-              </p>
-            )}
-
             <AddToCart
               productId={product.id}
               name={product.name}
               price={product.price}
-              image={product.images?.[0] ?? ""}
+              image={
+                product.images?.[0] ?? ""
+              }
               stock={product.stock}
             />
 
@@ -216,7 +212,9 @@ export default async function ProductPage({
         </section>
 
         <section
-          className={styles.descriptionSection}
+          className={
+            styles.descriptionSection
+          }
         >
           <h2>
             Опис товару
@@ -226,11 +224,11 @@ export default async function ProductPage({
             {product.description ||
               "Опис для цього товару поки відсутній."}
           </p>
-
         </section>
+
         <ProductReviews
-            productId={product.id}
-          />
+          productId={product.id}
+        />
       </div>
     </main>
   );
