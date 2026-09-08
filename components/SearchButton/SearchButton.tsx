@@ -1,6 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 import styles from "./SearchButton.module.css";
 
@@ -13,12 +18,18 @@ export default function SearchButton() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+
+    const timer = window.setTimeout(() => {
       inputRef.current?.focus();
-    }
+    }, 50);
+
+    return () => window.clearTimeout(timer);
   }, [open]);
 
   useEffect(() => {
+    if (!open) return;
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setOpen(false);
@@ -30,7 +41,22 @@ export default function SearchButton() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  const closeSearch = () => {
+    setOpen(false);
+  };
 
   const handleSubmit = (
     event: FormEvent<HTMLFormElement>
@@ -39,13 +65,12 @@ export default function SearchButton() {
 
     const value = search.trim();
 
-    if (!value) {
-      return;
-    }
+    if (!value) return;
 
-    router.push(
-      `/products?search=${encodeURIComponent(value)}`
-    );
+    const params = new URLSearchParams();
+    params.set("search", value);
+
+    router.push(`/products?${params.toString()}`);
 
     setOpen(false);
     setSearch("");
@@ -56,27 +81,27 @@ export default function SearchButton() {
       <button
         type="button"
         className={styles.searchButton}
-        aria-label="Пошук"
+        aria-label="Відкрити пошук"
+        title="Пошук"
         onClick={() => setOpen(true)}
       >
         <svg
-          width="21"
-          height="21"
           viewBox="0 0 24 24"
           fill="none"
+          aria-hidden="true"
         >
           <circle
             cx="11"
             cy="11"
             r="7"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="1.8"
           />
 
           <path
             d="M16.5 16.5L21 21"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="1.8"
             strokeLinecap="round"
           />
         </svg>
@@ -85,17 +110,22 @@ export default function SearchButton() {
       {open && (
         <div
           className={styles.overlay}
-          onClick={() => setOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Пошук товарів"
+          onMouseDown={closeSearch}
         >
           <div
             className={styles.modal}
-            onClick={(event) =>
+            onMouseDown={(event) =>
               event.stopPropagation()
             }
           >
             <div className={styles.header}>
               <div>
-                <span>Пошук</span>
+                <span className={styles.eyebrow}>
+                  Каталог
+                </span>
 
                 <h2>Що шукаєте?</h2>
               </div>
@@ -103,10 +133,21 @@ export default function SearchButton() {
               <button
                 type="button"
                 className={styles.close}
-                onClick={() => setOpen(false)}
-                aria-label="Закрити"
+                onClick={closeSearch}
+                aria-label="Закрити пошук"
               >
-                ×
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 6L18 18M18 6L6 18"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
               </button>
             </div>
 
@@ -116,36 +157,48 @@ export default function SearchButton() {
             >
               <div className={styles.inputWrapper}>
                 <svg
-                  width="20"
-                  height="20"
+                  className={styles.inputIcon}
                   viewBox="0 0 24 24"
                   fill="none"
+                  aria-hidden="true"
                 >
                   <circle
                     cx="11"
                     cy="11"
                     r="7"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="1.8"
                   />
 
                   <path
                     d="M16.5 16.5L21 21"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="1.8"
                     strokeLinecap="round"
                   />
                 </svg>
 
                 <input
                   ref={inputRef}
-                  type="text"
+                  type="search"
                   placeholder="Наприклад: педалі, гріпси..."
                   value={search}
                   onChange={(event) =>
                     setSearch(event.target.value)
                   }
+                  aria-label="Пошук товарів"
                 />
+
+                {search && (
+                  <button
+                    type="button"
+                    className={styles.clear}
+                    onClick={() => setSearch("")}
+                    aria-label="Очистити пошук"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
 
               <button
@@ -153,13 +206,14 @@ export default function SearchButton() {
                 className={styles.submit}
                 disabled={!search.trim()}
               >
-                Знайти
+                <span>Знайти</span>
+                <span className={styles.arrow}>→</span>
               </button>
             </form>
 
             <p className={styles.hint}>
-              Натисніть Enter для пошуку або Esc,
-              щоб закрити.
+              <span>Enter</span> — пошук
+              <span>Esc</span> — закрити
             </p>
           </div>
         </div>

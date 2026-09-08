@@ -1,4 +1,7 @@
 import Link from "next/link";
+
+import ProductCard from "@/components/ProductCard/ProductCard";
+
 import styles from "./PopularProducts.module.css";
 
 interface Product {
@@ -7,99 +10,114 @@ interface Product {
   slug: string;
   price: number;
   oldPrice: number | null;
+  stock: number;
   images: string[];
+  rating?: number;
+  category?: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+}
+
+interface ProductsResponse {
+  data?: Product[];
 }
 
 export default async function PopularProducts() {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/products`,
-    {
-      cache: "no-store",
+  try {
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+      return null;
     }
-  );
 
-  const result = await response.json();
+    const response = await fetch(
+      `${apiUrl}/api/products`,
+      {
+        cache: "no-store",
+      }
+    );
 
-  const products: Product[] = result.data ?? [];
+    if (!response.ok) {
+      return null;
+    }
 
-  const popularProducts = products.slice(0, 4);
+    const result: ProductsResponse =
+      await response.json();
 
-  return (
-    <section className={styles.section}>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <div>
-            <span className={styles.label}>
-              Рекомендуємо
-            </span>
+    const products =
+      result.data ?? [];
 
-            <h2 className={styles.title}>
-              Популярні товари
-            </h2>
+    const popularProducts =
+      products
+        .filter(
+          (product) => product.stock > 0
+        )
+        .slice(0, 4);
+
+    if (!popularProducts.length) {
+      return null;
+    }
+
+    return (
+      <section
+        className={styles.section}
+        aria-labelledby="popular-products-title"
+      >
+        <div className={styles.container}>
+          <div className={styles.header}>
+            <div>
+              <span
+                className={styles.label}
+              >
+                Рекомендуємо
+              </span>
+
+              <h2
+                id="popular-products-title"
+                className={styles.title}
+              >
+                Популярні товари
+              </h2>
+
+              <p
+                className={styles.subtitle}
+              >
+                Те, що найчастіше обирають
+                наші покупці.
+              </p>
+            </div>
+
+            <Link
+              href="/products"
+              className={styles.allLink}
+            >
+              <span>
+                Дивитися всі
+              </span>
+
+              <span aria-hidden="true">
+                →
+              </span>
+            </Link>
           </div>
 
-          <Link
-            href="/products"
-            className={styles.allLink}
-          >
-            Дивитися всі →
-          </Link>
+          <div className={styles.grid}>
+            {popularProducts.map(
+              (product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                />
+              )
+            )}
+          </div>
         </div>
-
-        <div className={styles.grid}>
-          {popularProducts.map((product) => {
-            const discount =
-              product.oldPrice !== null
-                ? Math.round(
-                    ((product.oldPrice -
-                      product.price) /
-                      product.oldPrice) *
-                      100
-                  )
-                : 0;
-
-            return (
-              <Link
-                key={product.id}
-                href={`/products/${product.slug}`}
-                className={styles.card}
-              >
-                <div className={styles.imageWrapper}>
-                  {discount > 0 && (
-                    <span className={styles.discount}>
-                      -{discount}%
-                    </span>
-                  )}
-
-                  <img
-                    src={product.images?.[0]}
-                    alt={product.name}
-                    className={styles.image}
-                  />
-                </div>
-
-                <div className={styles.cardContent}>
-                  <h3 className={styles.productName}>
-                    {product.name}
-                  </h3>
-
-                  <div className={styles.priceRow}>
-                    <span className={styles.price}>
-                      {product.price} грн
-                    </span>
-
-                    {product.oldPrice !== null && (
-                      <span className={styles.oldPrice}>
-                        {product.oldPrice} грн
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
+      </section>
+    );
+  } catch {
+    return null;
+  }
 }

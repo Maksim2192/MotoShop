@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import styles from "./AddToCart.module.css";
 
 interface AddToCartProps {
@@ -8,6 +9,15 @@ interface AddToCartProps {
   name: string;
   price: number;
   image: string;
+  stock: number;
+}
+
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  quantity: number;
   stock: number;
 }
 
@@ -19,36 +29,49 @@ export default function AddToCart({
   stock,
 }: AddToCartProps) {
   const [quantity, setQuantity] = useState(1);
+  const [isAdding, setIsAdding] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  const isAvailable = stock > 0;
 
   const decrease = () => {
     setQuantity((prev) => Math.max(1, prev - 1));
+    setAdded(false);
   };
 
   const increase = () => {
-    setQuantity((prev) =>
-      Math.min(stock, prev + 1)
-    );
+    setQuantity((prev) => Math.min(stock, prev + 1));
+    setAdded(false);
   };
 
   const handleAddToCart = () => {
-    const currentCart = JSON.parse(
-      localStorage.getItem("cart") || "[]"
-    );
+    if (!isAvailable || isAdding) {
+      return;
+    }
 
-    const existingProduct =
-      currentCart.find(
-        (item: { id: number }) =>
-          item.id === productId
+    setIsAdding(true);
+
+    try {
+      const storedCart = localStorage.getItem("cart");
+
+      let currentCart: CartItem[] = [];
+
+      try {
+        currentCart = storedCart
+          ? JSON.parse(storedCart)
+          : [];
+      } catch {
+        currentCart = [];
+      }
+
+      const existingProduct = currentCart.find(
+        (item) => item.id === productId
       );
 
-    let updatedCart;
+      let updatedCart: CartItem[];
 
-    if (existingProduct) {
-      updatedCart = currentCart.map(
-        (item: {
-          id: number;
-          quantity: number;
-        }) =>
+      if (existingProduct) {
+        updatedCart = currentCart.map((item) =>
           item.id === productId
             ? {
                 ...item,
@@ -58,62 +81,121 @@ export default function AddToCart({
                 ),
               }
             : item
+        );
+      } else {
+        updatedCart = [
+          ...currentCart,
+          {
+            id: productId,
+            name,
+            price,
+            image,
+            quantity,
+            stock,
+          },
+        ];
+      }
+
+      localStorage.setItem(
+        "cart",
+        JSON.stringify(updatedCart)
       );
-    } else {
-      updatedCart = [
-        ...currentCart,
-        {
-          id: productId,
-          name,
-          price,
-          image,
-          quantity,
-          stock,
-        },
-      ];
+
+      window.dispatchEvent(
+        new Event("cart-updated")
+      );
+
+      setAdded(true);
+
+      window.setTimeout(() => {
+        setAdded(false);
+      }, 2000);
+    } finally {
+      window.setTimeout(() => {
+        setIsAdding(false);
+      }, 350);
     }
-
-    localStorage.setItem(
-      "cart",
-      JSON.stringify(updatedCart)
-    );
-
-    window.dispatchEvent(
-      new Event("cart-updated")
-    );
   };
 
   return (
     <div className={styles.buyBlock}>
-      <div className={styles.quantity}>
-        <button
-          type="button"
-          onClick={decrease}
-          disabled={quantity <= 1}
-        >
-          −
-        </button>
+      <div className={styles.quantityWrapper}>
+        <span className={styles.quantityLabel}>
+          Кількість
+        </span>
 
-        <span>{quantity}</span>
+        <div className={styles.quantity}>
+          <button
+            type="button"
+            onClick={decrease}
+            disabled={
+              quantity <= 1 ||
+              isAdding ||
+              !isAvailable
+            }
+            aria-label="Зменшити кількість"
+          >
+            −
+          </button>
 
-        <button
-          type="button"
-          onClick={increase}
-          disabled={quantity >= stock}
-        >
-          +
-        </button>
+          <span aria-live="polite">
+            {quantity}
+          </span>
+
+          <button
+            type="button"
+            onClick={increase}
+            disabled={
+              quantity >= stock ||
+              isAdding ||
+              !isAvailable
+            }
+            aria-label="Збільшити кількість"
+          >
+            +
+          </button>
+        </div>
       </div>
 
       <button
         type="button"
-        className={styles.cartButton}
+        className={`${styles.cartButton} ${
+          added ? styles.added : ""
+        }`}
         onClick={handleAddToCart}
-        disabled={stock <= 0}
+        disabled={!isAvailable || isAdding}
       >
-        {stock > 0
-          ? "Додати в кошик"
-          : "Немає в наявності"}
+        {!isAvailable ? (
+          <>
+            <span className={styles.buttonIcon}>
+              ×
+            </span>
+
+            Немає в наявності
+          </>
+        ) : isAdding ? (
+          <>
+            <span className={styles.spinner} />
+
+            Додаємо...
+          </>
+        ) : added ? (
+          <>
+            <span className={styles.buttonIcon}>
+              ✓
+            </span>
+
+            Додано в кошик
+          </>
+        ) : (
+          <>
+            <span className={styles.buttonIcon}>
+              +
+            </span>
+
+            Додати в кошик
+          </>
+        )}
       </button>
     </div>
   );

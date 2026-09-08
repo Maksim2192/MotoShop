@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import styles from "./Categories.module.css";
 
 interface Category {
@@ -7,62 +8,148 @@ interface Category {
   slug: string;
 }
 
+interface CategoriesResponse {
+  data?: Category[];
+}
+
+const categoryIcons = [
+  "⚙",
+  "🔧",
+  "💡",
+  "🪞",
+  "🛞",
+  "🏍",
+];
+
 export default async function Categories() {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/categories`,
-    {
-      cache: "no-store",
+  try {
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+      return null;
     }
-  );
 
-  const result = await response.json();
+    const response = await fetch(
+      `${apiUrl}/api/categories`,
+      {
+        cache: "no-store",
+      }
+    );
 
-  const categories: Category[] =
-    result.data ?? [];
+    if (!response.ok) {
+      return null;
+    }
 
-  return (
-    <section className={styles.section}>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <span className={styles.label}>
-            Обирай швидше
-          </span>
+    const result: CategoriesResponse =
+      await response.json();
 
-          <h2 className={styles.title}>
-            Категорії товарів
-          </h2>
+    const categories =
+      result.data ?? [];
 
-          <p className={styles.subtitle}>
-            Знайди потрібні компоненти та аксесуари
-            для свого мотоцикла.
-          </p>
-        </div>
+    if (!categories.length) {
+      return null;
+    }
 
-        <div className={styles.grid}>
-          {categories.map((category, index) => (
+    return (
+      <section
+        className={styles.section}
+        aria-labelledby="categories-title"
+      >
+        <div className={styles.container}>
+          <div className={styles.header}>
+            <div>
+              <span className={styles.label}>
+                Обирай швидше
+              </span>
+
+              <h2
+                id="categories-title"
+                className={styles.title}
+              >
+                Категорії товарів
+              </h2>
+
+              <p className={styles.subtitle}>
+                Знайди потрібні аксесуари та
+                компоненти для свого мотоцикла.
+              </p>
+            </div>
+
             <Link
-              key={category.id}
-              href={`/products?category=${category.slug}`}
-              className={styles.card}
+              href="/products"
+              className={styles.allLink}
             >
-              <div className={styles.number}>
-                {String(index + 1).padStart(2, "0")}
-              </div>
-
-              <div className={styles.cardContent}>
-                <h3 className={styles.cardTitle}>
-                  {category.name}
-                </h3>
-
-                <span className={styles.linkText}>
-                  Переглянути товари
-                  <span>→</span>
-                </span>
-              </div>
+              Весь каталог →
             </Link>
-          ))}
+          </div>
+
+          <div className={styles.grid}>
+            {categories.map(
+              (category, index) => (
+                <Link
+                  key={category.id}
+                  href={`/products?category=${encodeURIComponent(
+                    category.slug
+                  )}`}
+                  className={styles.card}
+                >
+                  <div className={styles.top}>
+                    <span
+                      className={
+                        styles.icon
+                      }
+                      aria-hidden="true"
+                    >
+                      {
+                        categoryIcons[
+                          index %
+                            categoryIcons.length
+                        ]
+                      }
+                    </span>
+
+                    <span
+                      className={
+                        styles.number
+                      }
+                    >
+                      {String(
+                        index + 1
+                      ).padStart(2, "0")}
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      styles.cardBottom
+                    }
+                  >
+                    <h3
+                      className={
+                        styles.cardTitle
+                      }
+                    >
+                      {category.name}
+                    </h3>
+
+                    <span
+                      className={
+                        styles.arrow
+                      }
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
+                  </div>
+                </Link>
+              )
+            )}
+          </div>
         </div>
-      </div>
-    </section>
-  );
+      </section>
+    );
+  } catch {
+    return null;
+  }
 }

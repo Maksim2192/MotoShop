@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import styles from "./ProductGallery.module.css";
 
 interface ProductGalleryProps {
@@ -20,24 +24,21 @@ export default function ProductGallery({
   const [isOpen, setIsOpen] =
     useState(false);
 
-  const safeImages =
-    images?.filter(Boolean) ?? [];
+  const [touchStart, setTouchStart] =
+    useState<number | null>(null);
 
-  const showPrevious = () => {
-    setActiveIndex((current) =>
-      current === 0
-        ? safeImages.length - 1
-        : current - 1
-    );
-  };
+  const safeImages = images?.filter(Boolean) ?? [];
 
-  const showNext = () => {
-    setActiveIndex((current) =>
-      current === safeImages.length - 1
-        ? 0
-        : current + 1
-    );
-  };
+  const hasMultipleImages =
+    safeImages.length > 1;
+
+  useEffect(() => {
+    if (
+      activeIndex >= safeImages.length
+    ) {
+      setActiveIndex(0);
+    }
+  }, [activeIndex, safeImages.length]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -53,18 +54,29 @@ export default function ProductGallery({
 
       if (
         event.key === "ArrowLeft" &&
-        safeImages.length > 1
+        hasMultipleImages
       ) {
-        showPrevious();
+        setActiveIndex((current) =>
+          current === 0
+            ? safeImages.length - 1
+            : current - 1
+        );
       }
 
       if (
         event.key === "ArrowRight" &&
-        safeImages.length > 1
+        hasMultipleImages
       ) {
-        showNext();
+        setActiveIndex((current) =>
+          current === safeImages.length - 1
+            ? 0
+            : current + 1
+        );
       }
     };
+
+    const previousOverflow =
+      document.body.style.overflow;
 
     document.body.style.overflow =
       "hidden";
@@ -75,21 +87,80 @@ export default function ProductGallery({
     );
 
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow =
+        previousOverflow;
 
       window.removeEventListener(
         "keydown",
         handleKeyDown
       );
     };
-  }, [isOpen, safeImages.length]);
+  }, [
+    isOpen,
+    hasMultipleImages,
+    safeImages.length,
+  ]);
+
+  const showPrevious = () => {
+    if (!hasMultipleImages) {
+      return;
+    }
+
+    setActiveIndex((current) =>
+      current === 0
+        ? safeImages.length - 1
+        : current - 1
+    );
+  };
+
+  const showNext = () => {
+    if (!hasMultipleImages) {
+      return;
+    }
+
+    setActiveIndex((current) =>
+      current === safeImages.length - 1
+        ? 0
+        : current + 1
+    );
+  };
+
+  const handleTouchStart = (
+    event: React.TouchEvent
+  ) => {
+    setTouchStart(
+      event.touches[0].clientX
+    );
+  };
+
+  const handleTouchEnd = (
+    event: React.TouchEvent
+  ) => {
+    if (touchStart === null) {
+      return;
+    }
+
+    const touchEnd =
+      event.changedTouches[0].clientX;
+
+    const distance =
+      touchStart - touchEnd;
+
+    if (Math.abs(distance) > 50) {
+      if (distance > 0) {
+        showNext();
+      } else {
+        showPrevious();
+      }
+    }
+
+    setTouchStart(null);
+  };
 
   if (safeImages.length === 0) {
     return (
       <div className={styles.gallery}>
-        <div
-          className={styles.mainWrapper}
-        >
+        <div className={styles.mainWrapper}>
           <div className={styles.noImage}>
             Немає фото
           </div>
@@ -98,82 +169,107 @@ export default function ProductGallery({
     );
   }
 
+  const currentImage =
+    safeImages[activeIndex];
+
   return (
     <>
       <div className={styles.gallery}>
-        <button
-          type="button"
-          className={
-            styles.mainImageButton
-          }
-          onClick={() =>
-            setIsOpen(true)
-          }
-          aria-label="Відкрити фото"
+        <div
+          className={styles.mainWrapper}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
-          <div
-            className={
-              styles.mainWrapper
-            }
+          <button
+            type="button"
+            className={styles.mainImageButton}
+            onClick={() => setIsOpen(true)}
+            aria-label={`Відкрити фото ${activeIndex + 1} з ${safeImages.length}`}
           >
             <img
-              src={
-                safeImages[
-                  activeIndex
-                ]
-              }
-              alt={name}
-              className={
-                styles.mainImage
-              }
+              src={currentImage}
+              alt={`${name} — фото ${
+                activeIndex + 1
+              }`}
+              className={styles.mainImage}
             />
 
             <span
-              className={
-                styles.zoomHint
-              }
+              className={styles.zoomHint}
+              aria-hidden="true"
             >
               ⛶
             </span>
 
             {discount > 0 && (
-              <span
-                className={
-                  styles.discount
-                }
-              >
+              <span className={styles.discount}>
                 -{discount}%
               </span>
             )}
-          </div>
-        </button>
+          </button>
 
-        {safeImages.length > 1 && (
+          {hasMultipleImages && (
+            <>
+              <button
+                type="button"
+                className={`${styles.mainArrow} ${styles.mainArrowLeft}`}
+                onClick={showPrevious}
+                aria-label="Попереднє фото"
+              >
+                ‹
+              </button>
+
+              <button
+                type="button"
+                className={`${styles.mainArrow} ${styles.mainArrowRight}`}
+                onClick={showNext}
+                aria-label="Наступне фото"
+              >
+                ›
+              </button>
+            </>
+          )}
+
+          {hasMultipleImages && (
+            <span
+              className={styles.mainCounter}
+            >
+              {activeIndex + 1} /{" "}
+              {safeImages.length}
+            </span>
+          )}
+        </div>
+
+        {hasMultipleImages && (
           <div
-            className={
-              styles.thumbnails
-            }
+            className={styles.thumbnails}
+            role="tablist"
+            aria-label="Фотографії товару"
           >
             {safeImages.map(
               (image, index) => (
                 <button
                   key={`${image}-${index}`}
                   type="button"
+                  role="tab"
+                  aria-selected={
+                    activeIndex === index
+                  }
+                  aria-label={`Вибрати фото ${
+                    index + 1
+                  }`}
                   className={`${styles.thumbnail} ${
-                    activeIndex ===
-                    index
+                    activeIndex === index
                       ? styles.active
                       : ""
                   }`}
                   onClick={() =>
-                    setActiveIndex(
-                      index
-                    )
+                    setActiveIndex(index)
                   }
                 >
                   <img
                     src={image}
-                    alt={`${name} фото ${
+                    alt={`${name} — мініатюра ${
                       index + 1
                     }`}
                   />
@@ -187,24 +283,25 @@ export default function ProductGallery({
       {isOpen && (
         <div
           className={styles.lightbox}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Перегляд фотографій"
           onClick={() =>
             setIsOpen(false)
           }
         >
           <button
             type="button"
-            className={
-              styles.closeButton
-            }
+            className={styles.closeButton}
             onClick={() =>
               setIsOpen(false)
             }
-            aria-label="Закрити"
+            aria-label="Закрити перегляд"
           >
             ×
           </button>
 
-          {safeImages.length > 1 && (
+          {hasMultipleImages && (
             <button
               type="button"
               className={`${styles.lightboxArrow} ${styles.leftArrow}`}
@@ -212,42 +309,37 @@ export default function ProductGallery({
                 event.stopPropagation();
                 showPrevious();
               }}
+              aria-label="Попереднє фото"
             >
               ‹
             </button>
           )}
 
           <div
-            className={
-              styles.lightboxContent
-            }
+            className={styles.lightboxContent}
             onClick={(event) =>
               event.stopPropagation()
             }
           >
             <img
-              src={
-                safeImages[
-                  activeIndex
-                ]
-              }
-              alt={name}
-              className={
-                styles.lightboxImage
-              }
+              src={currentImage}
+              alt={`${name} — фото ${
+                activeIndex + 1
+              }`}
+              className={styles.lightboxImage}
             />
 
-            <span
-              className={
-                styles.imageCounter
-              }
-            >
-              {activeIndex + 1} /{" "}
-              {safeImages.length}
-            </span>
+            {hasMultipleImages && (
+              <span
+                className={styles.imageCounter}
+              >
+                {activeIndex + 1} /{" "}
+                {safeImages.length}
+              </span>
+            )}
           </div>
 
-          {safeImages.length > 1 && (
+          {hasMultipleImages && (
             <button
               type="button"
               className={`${styles.lightboxArrow} ${styles.rightArrow}`}
@@ -255,6 +347,7 @@ export default function ProductGallery({
                 event.stopPropagation();
                 showNext();
               }}
+              aria-label="Наступне фото"
             >
               ›
             </button>

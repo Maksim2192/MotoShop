@@ -1,59 +1,63 @@
 import styles from "./Benefits.module.css";
 
+const benefits = [
+  {
+    icon: "🚚",
+    title: "Швидка доставка",
+    text: "Відправляємо замовлення по всій Україні.",
+  },
+  {
+    icon: "✓",
+    title: "Перевірена якість",
+    text: "Підбираємо товари, які підходять для щоденного використання.",
+  },
+  {
+    icon: "↩",
+    title: "Зручне повернення",
+    text: "Простий процес обміну та повернення товарів.",
+  },
+  {
+    icon: "🔒",
+    title: "Безпечна покупка",
+    text: "Надійне оформлення та супровід кожного замовлення.",
+  },
+];
+
 export default function Benefits() {
   return (
-    <section className={styles.section}>
+    <section
+      className={styles.section}
+      aria-labelledby="benefits-title"
+    >
       <div className={styles.container}>
-        <div className={styles.item}>
-          <div className={styles.icon}>
-            🚚
-          </div>
+        <div className={styles.heading}>
+          <span>Переваги MotoShop</span>
 
-          <div>
-            <h3>Швидка доставка</h3>
-            <p>
-              Відправляємо замовлення по всій Україні.
-            </p>
-          </div>
+          <h2 id="benefits-title">
+            Чому обирають нас
+          </h2>
         </div>
 
-        <div className={styles.item}>
-          <div className={styles.icon}>
-            ✓
-          </div>
+        <div className={styles.grid}>
+          {benefits.map((benefit) => (
+            <article
+              key={benefit.title}
+              className={styles.item}
+            >
+              <div
+                className={styles.icon}
+                aria-hidden="true"
+              >
+                {benefit.icon}
+              </div>
 
-          <div>
-            <h3>Перевірена якість</h3>
-            <p>
-              Якісні товари для твого велосипеда.
-            </p>
-          </div>
-        </div>
+              <div>
+                <h3>{benefit.title}</h3>
 
-        <div className={styles.item}>
-          <div className={styles.icon}>
-            ↩
-          </div>
-
-          <div>
-            <h3>Зручне повернення</h3>
-            <p>
-              Простий процес обміну та повернення.
-            </p>
-          </div>
-        </div>
-
-        <div className={styles.item}>
-          <div className={styles.icon}>
-            🔒
-          </div>
-
-          <div>
-            <h3>Безпечна покупка</h3>
-            <p>
-              Надійне оформлення кожного замовлення.
-            </p>
-          </div>
+                <p>{benefit.text}</p>
+              </div>
+            </article>
+          ))}
         </div>
       </div>
     </section>

@@ -10,6 +10,7 @@ export default function Footer() {
             <Link
               href="/"
               className={styles.logo}
+              aria-label="MotoShop — головна"
             >
               MOTO<span>SHOP</span>
             </Link>
@@ -20,23 +21,29 @@ export default function Footer() {
             </p>
           </div>
 
-          <div className={styles.column}>
+          <nav
+            className={styles.column}
+            aria-label="Магазин"
+          >
             <h3>Магазин</h3>
 
             <Link href="/products">
               Каталог
             </Link>
 
-            <Link href="sales">
+            <Link href="/sales">
               Акції
             </Link>
 
-            <Link href="/about">
-              Про нас
+            <Link href="/contacts">
+              Контакти
             </Link>
-          </div>
+          </nav>
 
-          <div className={styles.column}>
+          <nav
+            className={styles.column}
+            aria-label="Допомога"
+          >
             <h3>Допомога</h3>
 
             <Link href="/delivery">
@@ -50,7 +57,7 @@ export default function Footer() {
             <Link href="/returns">
               Повернення
             </Link>
-          </div>
+          </nav>
 
           <div className={styles.column}>
             <h3>Контакти</h3>

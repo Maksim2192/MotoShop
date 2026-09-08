@@ -27,12 +27,32 @@ interface User {
   role?: "USER" | "ADMIN";
 }
 
+const navigation = [
+  {
+    label: "Головна",
+    href: "/",
+  },
+  {
+    label: "Каталог",
+    href: "/products",
+  },
+  {
+    label: "Акції",
+    href: "/sales",
+  },
+  {
+    label: "Про нас",
+    href: "/about",
+  },
+];
+
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const profileRef =
-    useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const searchInputRef =
+    useRef<HTMLInputElement>(null);
 
   const [cartCount, setCartCount] =
     useState(0);
@@ -52,48 +72,60 @@ export default function Header() {
   const [profileOpen, setProfileOpen] =
     useState(false);
 
-  const isActive = (
-    path: string
-  ) => {
-    if (path === "/") {
-      return pathname === "/";
-    }
+  const [mobileMenuOpen, setMobileMenuOpen] =
+    useState(false);
 
-    return pathname.startsWith(path);
-  };
+  const [logoutLoading, setLogoutLoading] =
+    useState(false);
 
-  const updateCartCount = () => {
+  const isActive = useCallback(
+    (href: string) => {
+      if (href === "/") {
+        return pathname === "/";
+      }
+
+      return (
+        pathname === href ||
+        pathname.startsWith(`${href}/`)
+      );
+    },
+    [pathname]
+  );
+
+  const updateCartCount = useCallback(() => {
     try {
+      const storedCart =
+        localStorage.getItem("cart");
+
+      if (!storedCart) {
+        setCartCount(0);
+        return;
+      }
+
       const cart: CartItem[] =
-        JSON.parse(
-          localStorage.getItem(
-            "cart"
-          ) || "[]"
-        );
+        JSON.parse(storedCart);
 
-      const totalCount =
-        cart.reduce(
-          (sum, item) =>
-            sum + item.quantity,
-          0
-        );
+      const total = cart.reduce(
+        (sum, item) =>
+          sum + (Number(item.quantity) || 0),
+        0
+      );
 
-      setCartCount(totalCount);
+      setCartCount(total);
     } catch {
       setCartCount(0);
     }
-  };
+  }, []);
 
-  const loadUser =
-    useCallback(async () => {
+  const loadUser = useCallback(
+    async () => {
       try {
-        const response =
-          await fetch(
-            "/api/auth/me",
-            {
-              cache: "no-store",
-            }
-          );
+        const response = await fetch(
+          "/api/auth/me",
+          {
+            cache: "no-store",
+          }
+        );
 
         if (!response.ok) {
           setUser(null);
@@ -111,41 +143,42 @@ export default function Header() {
         const result =
           JSON.parse(text);
 
-        setUser(
+        const currentUser =
           result.data ??
-            result.user ??
-            null
-        );
-      } catch (error) {
-        console.error(
-          "LOAD USER ERROR:",
-          error
-        );
+          result.user ??
+          null;
 
+        setUser(currentUser);
+      } catch {
         setUser(null);
       } finally {
         setAuthLoading(false);
       }
-    }, []);
+    },
+    []
+  );
 
   useEffect(() => {
     updateCartCount();
     loadUser();
 
-    const handleAuthUpdate =
-      () => {
-        setAuthLoading(true);
-        loadUser();
-      };
+    const handleCartUpdate = () => {
+      updateCartCount();
+    };
+
+    const handleAuthUpdate = () => {
+      setAuthLoading(true);
+      loadUser();
+    };
 
     window.addEventListener(
       "cart-updated",
-      updateCartCount
+      handleCartUpdate
     );
 
     window.addEventListener(
       "storage",
-      updateCartCount
+      handleCartUpdate
     );
 
     window.addEventListener(
@@ -156,12 +189,12 @@ export default function Header() {
     return () => {
       window.removeEventListener(
         "cart-updated",
-        updateCartCount
+        handleCartUpdate
       );
 
       window.removeEventListener(
         "storage",
-        updateCartCount
+        handleCartUpdate
       );
 
       window.removeEventListener(
@@ -169,7 +202,10 @@ export default function Header() {
         handleAuthUpdate
       );
     };
-  }, [loadUser]);
+  }, [
+    loadUser,
+    updateCartCount,
+  ]);
 
   useEffect(() => {
     const handleClickOutside = (
@@ -198,10 +234,40 @@ export default function Header() {
     };
   }, []);
 
+
+  useEffect(() => {
+    const handleEscape = (
+      event: KeyboardEvent
+    ) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      setProfileOpen(false);
+      setSearchOpen(false);
+      setMobileMenuOpen(false);
+    };
+
+    document.addEventListener(
+      "keydown",
+      handleEscape
+    );
+
+    return () => {
+      document.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+    };
+  }, []);
+
+
   useEffect(() => {
     setProfileOpen(false);
     setSearchOpen(false);
+    setMobileMenuOpen(false);
   }, [pathname]);
+
 
   const handleSearch = (
     event: FormEvent<HTMLFormElement>
@@ -212,199 +278,125 @@ export default function Header() {
       search.trim();
 
     if (!value) {
+      searchInputRef.current?.focus();
       return;
     }
+
+    setSearchOpen(false);
+    setSearch("");
+    setMobileMenuOpen(false);
 
     router.push(
       `/products?search=${encodeURIComponent(
         value
       )}`
     );
-
-    setSearchOpen(false);
-    setSearch("");
   };
 
-  const handleSearchToggle =
-    () => {
-      setSearchOpen(
-        (current) => !current
+  const toggleSearch = () => {
+    setSearchOpen(
+      (current) => !current
+    );
+
+    setProfileOpen(false);
+    setMobileMenuOpen(false);
+
+    if (searchOpen) {
+      setSearch("");
+    }
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(
+      (current) => !current
+    );
+
+    setSearchOpen(false);
+    setProfileOpen(false);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
+  const handleLogout = async () => {
+    if (logoutLoading) {
+      return;
+    }
+
+    setLogoutLoading(true);
+
+    try {
+      const response = await fetch(
+        "/api/auth/logout",
+        {
+          method: "POST",
+        }
       );
 
+      if (!response.ok) {
+        throw new Error(
+          "Не вдалося вийти з акаунта"
+        );
+      }
+
+      setUser(null);
       setProfileOpen(false);
+      setMobileMenuOpen(false);
 
-      if (searchOpen) {
-        setSearch("");
-      }
-    };
+      window.dispatchEvent(
+        new Event("auth-updated")
+      );
 
-  const handleLogout =
-    async () => {
-      try {
-        const response =
-          await fetch(
-            "/api/auth/logout",
-            {
-              method: "POST",
-            }
-          );
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.error(
+        "LOGOUT ERROR:",
+        error
+      );
+    } finally {
+      setLogoutLoading(false);
+    }
+  };
 
-        if (!response.ok) {
-          const text =
-            await response.text();
-
-          let message =
-            "Не вдалося вийти";
-
-          try {
-            const result =
-              text
-                ? JSON.parse(text)
-                : {};
-
-            message =
-              result.message ||
-              message;
-          } catch {
-            // ignore
-          }
-
-          throw new Error(
-            message
-          );
-        }
-
-        setUser(null);
-        setProfileOpen(false);
-
-        window.dispatchEvent(
-          new Event(
-            "auth-updated"
-          )
-        );
-
-        router.push("/");
-        router.refresh();
-      } catch (error) {
-        console.error(
-          "LOGOUT ERROR:",
-          error
-        );
-      }
-    };
 
   return (
-    <header
-      className={styles.header}
-    >
-      <div
-        className={
-          styles.container
-        }
-      >
+    <header className={styles.header}>
+      <div className={styles.container}>
+
         <Link
           href="/"
           className={styles.logo}
+          aria-label="MotoShop — головна"
         >
           MOTO<span>SHOP</span>
         </Link>
 
+
         <nav
           className={styles.nav}
+          aria-label="Головна навігація"
         >
-          <Link
-            href="/"
-            className={`${
-              styles.navLink
-            } ${
-              isActive("/")
-                ? styles.active
-                : ""
-            }`}
-          >
-            Головна
-          </Link>
-
-          <Link
-            href="/products"
-            className={`${
-              styles.navLink
-            } ${
-              isActive(
-                "/products"
-              )
-                ? styles.active
-                : ""
-            }`}
-          >
-            Каталог
-          </Link>
-
-          <Link
-            href="/sales"
-            className={`${
-              styles.navLink
-            } ${
-              isActive("/sales")
-                ? styles.active
-                : ""
-            }`}
-          >
-            Акції
-          </Link>
-
-          <Link
-            href="/about"
-            className={`${
-              styles.navLink
-            } ${
-              isActive("/about")
-                ? styles.active
-                : ""
-            }`}
-          >
-            Про нас
-          </Link>
+          {navigation.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`${styles.navLink} ${isActive(item.href)
+                  ? styles.active
+                  : ""
+                }`}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
-        <div
-          className={styles.actions}
-        >
-          {/* PROFILE */}
+
+        <div className={styles.actions}>
 
           {!authLoading &&
-            (!user ? (
-              <Link
-                href="/login"
-                className={
-                  styles.iconButton
-                }
-                aria-label="Увійти в акаунт"
-                title="Увійти"
-              >
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    cx="12"
-                    cy="8"
-                    r="4"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-
-                  <path
-                    d="M4 21C4 17.6863 7.58172 15 12 15C16.4183 15 20 17.6863 20 21"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </Link>
-            ) : (
+            (user ? (
               <div
                 ref={profileRef}
                 className={
@@ -416,19 +408,17 @@ export default function Header() {
                   className={
                     styles.profileButton
                   }
+                  aria-label="Меню профілю"
                   aria-expanded={
                     profileOpen
                   }
-                  aria-label="Меню профілю"
                   onClick={() => {
                     setProfileOpen(
                       (current) =>
                         !current
                     );
-
-                    setSearchOpen(
-                      false
-                    );
+                    setSearchOpen(false);
+                    setMobileMenuOpen(false);
                   }}
                 >
                   <span
@@ -450,17 +440,15 @@ export default function Header() {
                   </span>
 
                   <svg
-                    className={`${
-                      styles.chevron
-                    } ${
-                      profileOpen
+                    className={`${styles.chevron} ${profileOpen
                         ? styles.chevronOpen
                         : ""
-                    }`}
+                      }`}
                     width="14"
                     height="14"
                     viewBox="0 0 24 24"
                     fill="none"
+                    aria-hidden="true"
                   >
                     <path
                       d="M6 9L12 15L18 9"
@@ -501,50 +489,52 @@ export default function Header() {
                     <Link
                       href="/profile"
                       onClick={() =>
-                        setProfileOpen(
-                          false
-                        )
+                        setProfileOpen(false)
                       }
                     >
                       <span>
                         Мій профіль
                       </span>
 
-                      <span>→</span>
+                      <span aria-hidden="true">
+                        →
+                      </span>
                     </Link>
 
                     <Link
                       href="/profile/orders"
                       onClick={() =>
-                        setProfileOpen(
-                          false
-                        )
+                        setProfileOpen(false)
                       }
                     >
                       <span>
                         Мої замовлення
                       </span>
 
-                      <span>→</span>
+                      <span aria-hidden="true">
+                        →
+                      </span>
                     </Link>
 
                     {user.role ===
                       "ADMIN" && (
-                      <Link
-                        href="/admin"
-                        onClick={() =>
-                          setProfileOpen(
-                            false
-                          )
-                        }
-                      >
-                        <span>
-                          Адмін-панель
-                        </span>
+                        <Link
+                          href="/admin"
+                          onClick={() =>
+                            setProfileOpen(
+                              false
+                            )
+                          }
+                        >
+                          <span>
+                            Адмін-панель
+                          </span>
 
-                        <span>→</span>
-                      </Link>
-                    )}
+                          <span aria-hidden="true">
+                            →
+                          </span>
+                        </Link>
+                      )}
 
                     <div
                       className={
@@ -557,116 +547,74 @@ export default function Header() {
                       className={
                         styles.logoutButton
                       }
+                      disabled={
+                        logoutLoading
+                      }
                       onClick={
                         handleLogout
                       }
                     >
                       <span>
-                        Вийти
+                        {logoutLoading
+                          ? "Вихід..."
+                          : "Вийти"}
                       </span>
 
-                      <span>→</span>
+                      <span aria-hidden="true">
+                        →
+                      </span>
                     </button>
                   </div>
                 )}
               </div>
+            ) : (
+              <Link
+                href="/login"
+                className={
+                  styles.iconButton
+                }
+                aria-label="Увійти в акаунт"
+                title="Увійти"
+              >
+                <UserIcon />
+              </Link>
             ))}
-
-          {/* SEARCH */}
 
           <button
             type="button"
             className={
               styles.iconButton
             }
-            aria-label="Пошук"
+            aria-label={
+              searchOpen
+                ? "Закрити пошук"
+                : "Відкрити пошук"
+            }
+            aria-expanded={
+              searchOpen
+            }
             onClick={
-              handleSearchToggle
+              toggleSearch
             }
           >
             {searchOpen ? (
-              <svg
-                width="21"
-                height="21"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <path
-                  d="M6 6L18 18"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-
-                <path
-                  d="M18 6L6 18"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <CloseIcon />
             ) : (
-              <svg
-                width="21"
-                height="21"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <circle
-                  cx="11"
-                  cy="11"
-                  r="7"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
-
-                <path
-                  d="M16.5 16.5L21 21"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <SearchIcon />
             )}
           </button>
-
-          {/* CART */}
 
           <Link
             href="/cart"
             className={
               styles.cartButton
             }
-            aria-label="Кошик"
+            aria-label={`Кошик${cartCount
+                ? `, ${cartCount} товарів`
+                : ""
+              }`}
           >
-            <svg
-              width="23"
-              height="23"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <path
-                d="M3 4H5L7.4 15.2C7.6 16.2 8.5 17 9.6 17H18C19 17 19.9 16.3 20.1 15.3L21.5 8H6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-
-              <circle
-                cx="10"
-                cy="21"
-                r="1"
-                fill="currentColor"
-              />
-
-              <circle
-                cx="18"
-                cy="21"
-                r="1"
-                fill="currentColor"
-              />
-            </svg>
+            <CartIcon />
 
             {cartCount > 0 && (
               <span
@@ -680,10 +628,30 @@ export default function Header() {
               </span>
             )}
           </Link>
+
+          <button
+            type="button"
+            className={
+              styles.menuButton
+            }
+            aria-label={
+              mobileMenuOpen
+                ? "Закрити меню"
+                : "Відкрити меню"
+            }
+            aria-expanded={
+              mobileMenuOpen
+            }
+            onClick={
+              toggleMobileMenu
+            }
+          >
+            <span />
+            <span />
+            <span />
+          </button>
         </div>
       </div>
-
-      {/* SEARCH PANEL */}
 
       {searchOpen && (
         <div
@@ -695,48 +663,26 @@ export default function Header() {
             className={
               styles.searchForm
             }
-            onSubmit={
-              handleSearch
-            }
+            onSubmit={handleSearch}
           >
-            <svg
+            <SearchIcon
               className={
                 styles.searchIcon
               }
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <circle
-                cx="11"
-                cy="11"
-                r="7"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-
-              <path
-                d="M16.5 16.5L21 21"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
+            />
 
             <input
+              ref={searchInputRef}
               type="search"
               placeholder="Пошук товарів..."
               value={search}
-              onChange={(
-                event
-              ) =>
+              onChange={(event) =>
                 setSearch(
-                  event.target
-                    .value
+                  event.target.value
                 )
               }
               autoFocus
+              aria-label="Пошук товарів"
             />
 
             <button
@@ -750,6 +696,242 @@ export default function Header() {
           </form>
         </div>
       )}
+
+      {mobileMenuOpen && (
+        <>
+          <button
+            type="button"
+            className={
+              styles.mobileOverlay
+            }
+            aria-label="Закрити меню"
+            onClick={
+              closeMobileMenu
+            }
+          />
+
+          <nav
+            className={
+              styles.mobileMenu
+            }
+            aria-label="Мобільна навігація"
+          >
+            {navigation.map(
+              (item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={
+                    isActive(
+                      item.href
+                    )
+                      ? styles.mobileActive
+                      : ""
+                  }
+                  onClick={
+                    closeMobileMenu
+                  }
+                >
+                  {item.label}
+                </Link>
+              )
+            )}
+
+            <div
+              className={
+                styles.mobileDivider
+              }
+            />
+
+            {user ? (
+              <>
+                <Link
+                  href="/profile"
+                  onClick={
+                    closeMobileMenu
+                  }
+                >
+                  Мій профіль
+                </Link>
+
+                <Link
+                  href="/profile/orders"
+                  onClick={
+                    closeMobileMenu
+                  }
+                >
+                  Мої замовлення
+                </Link>
+
+                {user.role ===
+                  "ADMIN" && (
+                    <Link
+                      href="/admin"
+                      onClick={
+                        closeMobileMenu
+                      }
+                    >
+                      Адмін-панель
+                    </Link>
+                  )}
+
+                <button
+                  type="button"
+                  className={
+                    styles.mobileLogout
+                  }
+                  disabled={
+                    logoutLoading
+                  }
+                  onClick={
+                    handleLogout
+                  }
+                >
+                  {logoutLoading
+                    ? "Вихід..."
+                    : "Вийти з акаунта"}
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className={
+                  styles.mobileLogin
+                }
+                onClick={
+                  closeMobileMenu
+                }
+              >
+                Увійти в акаунт
+              </Link>
+            )}
+          </nav>
+        </>
+      )}
     </header>
+  );
+}
+
+interface IconProps {
+  className?: string;
+}
+
+function UserIcon({
+  className,
+}: IconProps) {
+  return (
+    <svg
+      className={className}
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="8"
+        r="4"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+
+      <path
+        d="M4 21C4 17.6863 7.58172 15 12 15C16.4183 15 20 17.6863 20 21"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function SearchIcon({
+  className,
+}: IconProps) {
+  return (
+    <svg
+      className={className}
+      width="21"
+      height="21"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="11"
+        cy="11"
+        r="7"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+
+      <path
+        d="M16.5 16.5L21 21"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      width="21"
+      height="21"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M6 6L18 18"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M18 6L6 18"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function CartIcon() {
+  return (
+    <svg
+      width="23"
+      height="23"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M3 4H5L7.4 15.2C7.6 16.2 8.5 17 9.6 17H18C19 17 19.9 16.3 20.1 15.3L21.5 8H6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      <circle
+        cx="10"
+        cy="21"
+        r="1"
+        fill="currentColor"
+      />
+
+      <circle
+        cx="18"
+        cy="21"
+        r="1"
+        fill="currentColor"
+      />
+    </svg>
   );
 }

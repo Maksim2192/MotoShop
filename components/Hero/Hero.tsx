@@ -7,17 +7,19 @@ export default function Hero() {
       <div className={styles.container}>
         <div className={styles.content}>
           <span className={styles.badge}>
-            Новий сезон
+            <span className={styles.badgeDot} />
+            MOTO SHOP · НОВИЙ СЕЗОН
           </span>
 
           <h1 className={styles.title}>
-            Все для твого
-            <span> мотоцикла</span>
+            Все необхідне
+            <span> для твого мотоцикла</span>
           </h1>
 
-          <p className={styles.text}>
-            Компоненти, аксесуари та екіпірування
+          <p className={styles.description}>
+            Аксесуари, запчастини та все необхідне
             для комфортних і впевнених поїздок.
+            Обирай, замовляй — ми подбаємо про решту.
           </p>
 
           <div className={styles.actions}>
@@ -26,24 +28,60 @@ export default function Hero() {
               className={styles.primaryButton}
             >
               Перейти до каталогу
+              <span>→</span>
             </Link>
 
             <Link
               href="/products?discount=true"
               className={styles.secondaryButton}
             >
-              Переглянути акції
+              Дивитися акції
             </Link>
+          </div>
+
+          <div className={styles.stats}>
+            <div className={styles.stat}>
+              <strong>100+</strong>
+              <span>товарів</span>
+            </div>
+
+            <div className={styles.statDivider} />
+
+            <div className={styles.stat}>
+              <strong>24/7</strong>
+              <span>приймаємо замовлення</span>
+            </div>
+
+            <div className={styles.statDivider} />
+
+            <div className={styles.stat}>
+              <strong>UA</strong>
+              <span>доставка по Україні</span>
+            </div>
           </div>
         </div>
 
         <div className={styles.visual}>
+          <div className={styles.glow} />
           <div className={styles.circle} />
 
-          <div className={styles.visualText}>
-            <span>MOTO</span>
-            <strong>RIDE</strong>
+          <div className={styles.visualContent}>
+            <span className={styles.visualSmall}>
+              RIDE
+            </span>
+
+            <strong className={styles.visualTitle}>
+              MOTO
+            </strong>
+
+            <span className={styles.visualBottom}>
+              SHOP
+            </span>
           </div>
+
+          <div className={`${styles.decor} ${styles.decorOne}`} />
+          <div className={`${styles.decor} ${styles.decorTwo}`} />
+          <div className={`${styles.decor} ${styles.decorThree}`} />
         </div>
       </div>
     </section>

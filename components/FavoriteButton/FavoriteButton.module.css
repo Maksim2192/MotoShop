@@ -1,48 +1,125 @@
 .button {
-  width: 40px;
-  height: 40px;
+  position: relative;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
+  width: 40px;
+  height: 40px;
+
   padding: 0;
 
-  border: 1px solid #e4e7eb;
+  border: 1px solid var(--color-border);
   border-radius: 50%;
 
-  background: #fff;
-  color: #111827;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--color-foreground);
 
   cursor: pointer;
 
+  box-shadow:
+    0 3px 12px rgba(0, 0, 0, 0.06);
+
+  backdrop-filter: blur(8px);
+
   transition:
-    background 0.2s ease,
+    transform 0.2s ease,
     color 0.2s ease,
+    background-color 0.2s ease,
     border-color 0.2s ease,
-    transform 0.2s ease;
+    box-shadow 0.2s ease;
 }
 
 .button:hover:not(:disabled) {
-  transform: scale(1.05);
+  transform: scale(1.06);
 
-  border-color: #22a856;
+  border-color: var(--color-primary);
 
-  color: #22a856;
+  color: var(--color-primary);
+
+  box-shadow:
+    0 5px 16px rgba(0, 0, 0, 0.1);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.button:focus-visible {
+  outline: 3px solid rgba(17, 17, 17, 0.16);
+  outline-offset: 2px;
 }
 
 .button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  cursor: wait;
+
+  opacity: 0.7;
+}
+
+.icon {
+  display: block;
+
+  width: 21px;
+  height: 21px;
+
+  transition:
+    transform 0.2s ease;
+}
+
+.button:hover:not(:disabled) .icon {
+  transform: scale(1.05);
 }
 
 .active {
-  border-color: #22a856;
+  border-color: var(--color-danger);
 
-  background: #edf9f0;
-  color: #22a856;
+  background: #fff5f5;
+
+  color: var(--color-danger);
 }
 
 .active:hover:not(:disabled) {
-  background: #e5f7ea;
+  border-color: var(--color-danger);
+
+  background: #ffebeb;
+
+  color: var(--color-danger);
+}
+
+.spinner {
+  display: block;
+
+  width: 17px;
+  height: 17px;
+
+  border: 2px solid #e5e5e5;
+  border-top-color: var(--color-primary);
+
+  border-radius: 50%;
+
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 600px) {
+  .button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .icon {
+    width: 19px;
+    height: 19px;
+  }
+
+  .spinner {
+    width: 15px;
+    height: 15px;
+  }
 }

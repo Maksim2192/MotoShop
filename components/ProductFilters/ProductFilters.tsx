@@ -29,8 +29,7 @@ export default function ProductFilters({
   basePath = "/products",
 }: ProductFiltersProps) {
   const router = useRouter();
-  const searchParams =
-    useSearchParams();
+  const searchParams = useSearchParams();
 
   const [search, setSearch] =
     useState("");
@@ -85,10 +84,16 @@ export default function ProductFilters({
     const params =
       new URLSearchParams();
 
-    if (search.trim()) {
+    const normalizedSearch =
+      search.trim();
+
+    const min = Number(minPrice);
+    const max = Number(maxPrice);
+
+    if (normalizedSearch) {
       params.set(
         "search",
-        search.trim()
+        normalizedSearch
       );
     }
 
@@ -99,21 +104,31 @@ export default function ProductFilters({
       );
     }
 
-    if (minPrice) {
+    if (
+      minPrice !== "" &&
+      Number.isFinite(min) &&
+      min >= 0
+    ) {
       params.set(
         "minPrice",
-        minPrice
+        String(min)
       );
     }
 
-    if (maxPrice) {
+    if (
+      maxPrice !== "" &&
+      Number.isFinite(max) &&
+      max >= 0
+    ) {
       params.set(
         "maxPrice",
-        maxPrice
+        String(max)
       );
     }
 
-    if (discount) {
+    if (
+      discount
+    ) {
       params.set(
         "discount",
         "true"
@@ -127,12 +142,7 @@ export default function ProductFilters({
       );
     }
 
-    // Після зміни фільтрів
-    // повертаємося на першу сторінку
-    params.set(
-      "page",
-      "1"
-    );
+    params.set("page", "1");
 
     const query =
       params.toString();
@@ -161,42 +171,61 @@ export default function ProductFilters({
       className={styles.filters}
     >
       <div className={styles.top}>
-        <h2>Фільтри</h2>
+        <div>
+          <span className={styles.eyebrow}>
+            Каталог
+          </span>
+
+          <h2>Фільтри</h2>
+        </div>
 
         <button
           type="button"
           onClick={handleReset}
           className={styles.reset}
         >
-          Скинути
+          Очистити
         </button>
       </div>
 
+      {/* SEARCH */}
+
       <div className={styles.field}>
-        <label htmlFor="search">
+        <label htmlFor="product-search">
           Пошук
         </label>
 
-        <input
-          id="search"
-          type="text"
-          placeholder="Назва товару..."
-          value={search}
-          onChange={(event) =>
-            setSearch(
-              event.target.value
-            )
-          }
-        />
+        <div className={styles.inputWrapper}>
+          <span
+            className={styles.inputIcon}
+            aria-hidden="true"
+          >
+            ⌕
+          </span>
+
+          <input
+            id="product-search"
+            type="search"
+            placeholder="Назва товару..."
+            value={search}
+            onChange={(event) =>
+              setSearch(
+                event.target.value
+              )
+            }
+          />
+        </div>
       </div>
 
+      {/* CATEGORY */}
+
       <div className={styles.field}>
-        <label htmlFor="category">
+        <label htmlFor="product-category">
           Категорія
         </label>
 
         <select
-          id="category"
+          id="product-category"
           value={category}
           onChange={(event) =>
             setCategory(
@@ -221,8 +250,12 @@ export default function ProductFilters({
         </select>
       </div>
 
+      {/* PRICE */}
+
       <div className={styles.field}>
-        <label>Ціна</label>
+        <label>
+          Ціна
+        </label>
 
         <div
           className={
@@ -232,7 +265,9 @@ export default function ProductFilters({
           <input
             type="number"
             min="0"
+            inputMode="numeric"
             placeholder="Від"
+            aria-label="Мінімальна ціна"
             value={minPrice}
             onChange={(event) =>
               setMinPrice(
@@ -241,10 +276,19 @@ export default function ProductFilters({
             }
           />
 
+          <span
+            className={styles.priceDash}
+            aria-hidden="true"
+          >
+            —
+          </span>
+
           <input
             type="number"
             min="0"
+            inputMode="numeric"
             placeholder="До"
+            aria-label="Максимальна ціна"
             value={maxPrice}
             onChange={(event) =>
               setMaxPrice(
@@ -255,10 +299,10 @@ export default function ProductFilters({
         </div>
       </div>
 
+      {/* DISCOUNT */}
+
       <label
-        className={
-          styles.checkbox
-        }
+        className={styles.checkbox}
       >
         <input
           type="checkbox"
@@ -270,18 +314,24 @@ export default function ProductFilters({
           }
         />
 
+        <span
+          className={styles.checkboxMark}
+        />
+
         <span>
           Тільки зі знижкою
         </span>
       </label>
 
+      {/* SORT */}
+
       <div className={styles.field}>
-        <label htmlFor="sort">
+        <label htmlFor="product-sort">
           Сортування
         </label>
 
         <select
-          id="sort"
+          id="product-sort"
           value={sort}
           onChange={(event) =>
             setSort(
@@ -315,7 +365,10 @@ export default function ProductFilters({
         type="submit"
         className={styles.submit}
       >
-        Застосувати
+        Застосувати фільтри
+        <span aria-hidden="true">
+          →
+        </span>
       </button>
     </form>
   );

@@ -1,7 +1,8 @@
 import Link from "next/link";
 
-import styles from "./ProductCard.module.css";
 import FavoriteButton from "@/components/FavoriteButton/FavoriteButton";
+
+import styles from "./ProductCard.module.css";
 
 interface Product {
   id: number;
@@ -11,7 +12,6 @@ interface Product {
   oldPrice: number | null;
   stock: number;
   images: string[];
-
   rating?: number;
 
   category?: {
@@ -39,19 +39,15 @@ export default function ProductCard({
       : 0;
 
   const rating = product.rating ?? 0;
+  const isAvailable = product.stock > 0;
 
   return (
     <article className={styles.card}>
-      <div className={styles.favorite}>
-        <FavoriteButton
-          productId={product.id}
-        />
-      </div>
-
       <div className={styles.imageWrapper}>
         <Link
           href={`/products/${product.slug}`}
           className={styles.imageLink}
+          aria-label={`Переглянути ${product.name}`}
         >
           {product.images?.[0] ? (
             <img
@@ -61,10 +57,14 @@ export default function ProductCard({
             />
           ) : (
             <div className={styles.noImage}>
-              Немає фото
+              <span>Немає фото</span>
             </div>
           )}
         </Link>
+
+        <div className={styles.favorite}>
+          <FavoriteButton productId={product.id} />
+        </div>
 
         {discount > 0 && (
           <span className={styles.discount}>
@@ -72,7 +72,7 @@ export default function ProductCard({
           </span>
         )}
 
-        {product.stock <= 0 && (
+        {!isAvailable && (
           <span className={styles.outOfStock}>
             Немає в наявності
           </span>
@@ -95,7 +95,10 @@ export default function ProductCard({
           </h3>
 
           <div className={styles.rating}>
-            <div className={styles.stars}>
+            <div
+              className={styles.stars}
+              aria-label={`Рейтинг ${rating.toFixed(1)} з 5`}
+            >
               {[1, 2, 3, 4, 5].map((star) => (
                 <span
                   key={star}
@@ -104,6 +107,7 @@ export default function ProductCard({
                       ? styles.starActive
                       : styles.star
                   }
+                  aria-hidden="true"
                 >
                   ★
                 </span>
@@ -117,28 +121,31 @@ export default function ProductCard({
 
           <div className={styles.priceRow}>
             <span className={styles.price}>
-              {product.price} грн
+              {product.price.toLocaleString("uk-UA")} грн
             </span>
 
             {product.oldPrice !== null &&
               product.oldPrice > product.price && (
                 <span className={styles.oldPrice}>
-                  {product.oldPrice} грн
+                  {product.oldPrice.toLocaleString("uk-UA")} грн
                 </span>
               )}
           </div>
-
-          <span
+          <div
             className={`${styles.stock} ${
-              product.stock > 0
+              isAvailable
                 ? styles.inStock
                 : styles.noStock
             }`}
           >
-            {product.stock > 0
-              ? "В наявності"
+            <span className={styles.stockDot} />
+
+            {isAvailable
+              ? product.stock <= 5
+                ? `Залишилось ${product.stock} шт.`
+                : "В наявності"
               : "Немає в наявності"}
-          </span>
+          </div>
         </div>
       </Link>
     </article>
