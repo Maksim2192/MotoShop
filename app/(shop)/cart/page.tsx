@@ -18,26 +18,111 @@ export default function CartPage() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const savedCart: CartItem[] = JSON.parse(
-      localStorage.getItem("cart") || "[]"
-    );
+  try {
+    const saved = localStorage.getItem("cart");
 
-    setCart(savedCart);
-    setLoaded(true);
-  }, []);
+    if (!saved) {
+      setCart([]);
+      return;
+    }
 
-  const saveCart = (items: CartItem[]) => {
-    setCart(items);
+    const parsed = JSON.parse(saved);
+
+    if (!Array.isArray(parsed)) {
+      setCart([]);
+      localStorage.removeItem("cart");
+      return;
+    }
+
+    const normalized: CartItem[] = parsed
+      .filter((item): item is CartItem => {
+        return (
+          item &&
+          Number.isInteger(item.id) &&
+          item.id > 0 &&
+          typeof item.name === "string" &&
+          Number.isFinite(Number(item.price)) &&
+          Number.isFinite(Number(item.quantity)) &&
+          Number.isFinite(Number(item.stock))
+        );
+      })
+      .map((item) => {
+        const stock = Math.max(
+          0,
+          Math.floor(Number(item.stock))
+        );
+
+        const quantity = Math.min(
+          Math.max(1, Math.floor(Number(item.quantity))),
+          Math.max(stock, 1)
+        );
+
+        return {
+          id: Number(item.id),
+          name: item.name,
+          price: Number(item.price),
+          image:
+            typeof item.image === "string"
+              ? item.image
+              : "",
+          quantity,
+          stock,
+        };
+      })
+      .filter((item) => item.stock > 0);
+
+    setCart(normalized);
 
     localStorage.setItem(
       "cart",
-      JSON.stringify(items)
+      JSON.stringify(normalized)
     );
+  } catch {
+    localStorage.removeItem("cart");
+    setCart([]);
+  } finally {
+    setLoaded(true);
+  }
+}, []);
 
-    window.dispatchEvent(
-      new Event("cart-updated")
-    );
-  };
+  const saveCart = (items: CartItem[]) => {
+  const normalized = items
+    .filter(
+      (item) =>
+        Number.isInteger(item.id) &&
+        item.id > 0 &&
+        item.stock > 0
+    )
+    .map((item) => ({
+      ...item,
+      price: Number(item.price),
+      stock: Math.max(
+        0,
+        Math.floor(Number(item.stock))
+      ),
+      quantity: Math.min(
+        Math.max(
+          1,
+          Math.floor(Number(item.quantity))
+        ),
+        Math.max(
+          1,
+          Math.floor(Number(item.stock))
+        )
+      ),
+    }));
+
+  setCart(normalized);
+
+  localStorage.setItem(
+    "cart",
+    JSON.stringify(normalized)
+  );
+
+  window.dispatchEvent(
+    new Event("cart-updated")
+  );
+};
 
   const increaseQuantity = (id: number) => {
     const updatedCart = cart.map((item) =>

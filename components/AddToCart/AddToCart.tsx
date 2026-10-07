@@ -64,6 +64,28 @@ export default function AddToCart({
         currentCart = [];
       }
 
+      const safeStock = Math.max(
+        0,
+        Math.floor(Number(stock))
+      );
+
+      const safePrice = Number(price);
+
+      if (
+        !Number.isInteger(productId) ||
+        productId <= 0 ||
+        !Number.isFinite(safePrice) ||
+        safePrice < 0 ||
+        safeStock <= 0
+      ) {
+        return;
+      }
+
+      const safeQuantity = Math.min(
+        Math.max(1, Math.floor(Number(quantity))),
+        safeStock
+      );
+
       const existingProduct = currentCart.find(
         (item) => item.id === productId
       );
@@ -74,12 +96,15 @@ export default function AddToCart({
         updatedCart = currentCart.map((item) =>
           item.id === productId
             ? {
-                ...item,
-                quantity: Math.min(
-                  stock,
-                  item.quantity + quantity
-                ),
-              }
+              ...item,
+              quantity: Math.min(
+                safeStock,
+                Math.max(
+                  1,
+                  Number(item.quantity) + safeQuantity
+                )
+              ),
+            }
             : item
         );
       } else {
@@ -88,10 +113,10 @@ export default function AddToCart({
           {
             id: productId,
             name,
-            price,
+            price: safePrice,
             image,
-            quantity,
-            stock,
+            quantity: safeQuantity,
+            stock: safeStock,
           },
         ];
       }
@@ -159,9 +184,8 @@ export default function AddToCart({
 
       <button
         type="button"
-        className={`${styles.cartButton} ${
-          added ? styles.added : ""
-        }`}
+        className={`${styles.cartButton} ${added ? styles.added : ""
+          }`}
         onClick={handleAddToCart}
         disabled={!isAvailable || isAdding}
       >

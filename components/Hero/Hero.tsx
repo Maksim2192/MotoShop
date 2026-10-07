@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import styles from "./Hero.module.css";
 
@@ -6,29 +7,26 @@ export default function Hero() {
     <section className={styles.hero}>
       <div className={styles.container}>
         <div className={styles.content}>
-          <span className={styles.badge}>
-            <span className={styles.badgeDot} />
-            MOTO SHOP · НОВИЙ СЕЗОН
-          </span>
+          <div className={styles.label}>
+            <span className={styles.labelDot} />
+            MOTO SHOP · 2026
+          </div>
 
           <h1 className={styles.title}>
-            Все необхідне
-            <span> для твого мотоцикла</span>
+            Все для
+            <br />
+            <span>твого мото</span>
           </h1>
 
           <p className={styles.description}>
-            Аксесуари, запчастини та все необхідне
-            для комфортних і впевнених поїздок.
-            Обирай, замовляй — ми подбаємо про решту.
+            Запчастини, аксесуари та екіпіровка для тих,
+            хто не уявляє життя без дороги.
           </p>
 
           <div className={styles.actions}>
-            <Link
-              href="/products"
-              className={styles.primaryButton}
-            >
-              Перейти до каталогу
-              <span>→</span>
+            <Link href="/products" className={styles.primaryButton}>
+              <span>Перейти до каталогу</span>
+              <span className={styles.buttonIcon}>↗</span>
             </Link>
 
             <Link
@@ -39,50 +37,79 @@ export default function Hero() {
             </Link>
           </div>
 
-          <div className={styles.stats}>
-            <div className={styles.stat}>
-              <strong>100+</strong>
-              <span>товарів</span>
+          <div className={styles.features}>
+            <div className={styles.feature}>
+              <strong>01</strong>
+              <span>Запчастини</span>
             </div>
 
-            <div className={styles.statDivider} />
-
-            <div className={styles.stat}>
-              <strong>24/7</strong>
-              <span>приймаємо замовлення</span>
+            <div className={styles.feature}>
+              <strong>02</strong>
+              <span>Аксесуари</span>
             </div>
 
-            <div className={styles.statDivider} />
-
-            <div className={styles.stat}>
-              <strong>UA</strong>
-              <span>доставка по Україні</span>
+            <div className={styles.feature}>
+              <strong>03</strong>
+              <span>Екіпіровка</span>
             </div>
           </div>
         </div>
 
         <div className={styles.visual}>
-          <div className={styles.glow} />
-          <div className={styles.circle} />
+          <div className={styles.imageFrame}>
+            <Image
+              src="/images/viclop.jpg"
+              alt="Мотоцикл"
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 58vw"
+              className={styles.image}
+            />
 
-          <div className={styles.visualContent}>
-            <span className={styles.visualSmall}>
-              RIDE
-            </span>
+            <div className={styles.imageOverlay} />
 
-            <strong className={styles.visualTitle}>
-              MOTO
-            </strong>
+            <div className={styles.imageTop}>
+              <span>RIDE</span>
+              <span>01 / 03</span>
+            </div>
 
-            <span className={styles.visualBottom}>
-              SHOP
-            </span>
+            <div className={styles.imageBottom}>
+              <div>
+                <span className={styles.smallText}>MOTO SHOP</span>
+                <strong>RIDE YOUR WAY</strong>
+              </div>
+
+              <span className={styles.arrow}>↗</span>
+            </div>
           </div>
 
-          <div className={`${styles.decor} ${styles.decorOne}`} />
-          <div className={`${styles.decor} ${styles.decorTwo}`} />
-          <div className={`${styles.decor} ${styles.decorThree}`} />
+          <div className={styles.verticalLabel}>
+            <span>EST.</span>
+            <span>2026</span>
+          </div>
         </div>
+      </div>
+
+      <div className={styles.bottomBar}>
+        <div className={styles.bottomItem}>
+          <span className={styles.bottomIcon}>✓</span>
+          <span>Перевірені товари</span>
+        </div>
+
+        <div className={styles.bottomItem}>
+          <span className={styles.bottomIcon}>✓</span>
+          <span>Доставка по Україні</span>
+        </div>
+
+        <div className={styles.bottomItem}>
+          <span className={styles.bottomIcon}>✓</span>
+          <span>Безпечна оплата</span>
+        </div>
+
+        <Link href="/products" className={styles.allProducts}>
+          Переглянути всі товари
+          <span>→</span>
+        </Link>
       </div>
     </section>
   );

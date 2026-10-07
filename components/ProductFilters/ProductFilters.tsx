@@ -188,8 +188,6 @@ export default function ProductFilters({
         </button>
       </div>
 
-      {/* SEARCH */}
-
       <div className={styles.field}>
         <label htmlFor="product-search">
           Пошук
@@ -216,8 +214,6 @@ export default function ProductFilters({
           />
         </div>
       </div>
-
-      {/* CATEGORY */}
 
       <div className={styles.field}>
         <label htmlFor="product-category">
@@ -249,8 +245,6 @@ export default function ProductFilters({
           )}
         </select>
       </div>
-
-      {/* PRICE */}
 
       <div className={styles.field}>
         <label>
@@ -298,8 +292,6 @@ export default function ProductFilters({
           />
         </div>
       </div>
-
-      {/* DISCOUNT */}
 
       <label
         className={styles.checkbox}
